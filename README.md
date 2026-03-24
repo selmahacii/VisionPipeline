@@ -1,6 +1,6 @@
-# VisionPipeline 👁️
+# VisionPipeline 
 
-## 🌌 System Overview
+## System Overview
 
 ```mermaid
 graph TD
@@ -45,7 +45,7 @@ graph TD
 
 ---
 
-## 🏗️ Data Engineering Pipeline (Medallion Architecture)
+##  Data Engineering Pipeline (Medallion Architecture)
 
 ```mermaid
 flowchart LR
@@ -76,7 +76,7 @@ flowchart LR
 
 ---
 
-## 📈 Drift Detection & Model Lifecycle
+##  Drift Detection & Model Lifecycle
 
 ```mermaid
 sequenceDiagram
@@ -99,7 +99,7 @@ sequenceDiagram
 
 ---
 
-## ⚡ Real-time Execution Flow
+##  Real-time Execution Flow
 
 ```mermaid
 flowchart TD
@@ -117,7 +117,7 @@ flowchart TD
 
 ---
 
-## 📁 Repository Structure
+##  Repository Structure
 
 ```mermaid
 mindmap
@@ -138,6 +138,52 @@ mindmap
     prisma
       schema :: DB Architecture
 ```
+
+---
+
+##  Quick Start
+
+```bash
+# 1. Install dependencies
+make install
+
+# 2. Start full stack (Docker)
+docker-compose up --build -d
+
+# 3. Access Dashboard
+open http://localhost:5173
+```
+
+---
+
+## 🏗️ Architecture (ASCII)
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           VisionPipeline (MLOps Core)                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│ [Sources]  ──▶ [BRONZE]  ──▶ [SILVER]  ──▶ [GOLD]  ──▶ [Visuals]            │
+│   RTSP/URL       Raw Frame    Detections    Metrics      Grafana            │
+│                  Ingestion    Tracking      Drift PSI    Dashboard          │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                             MLOps Lifecycle                                 │
+│                                                                             │
+│ [Monitoring] ◀─▶ [MLflow Registry] ◀──▶ [Airflow DAG]                       │
+│  Evidently         Model Versioning        Retraining Flow                  │
+│  (Drift Score)                             (Audit >> Train >> Register)      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📊 Medallion Pipeline Lifecycle
+
+- **BRONZE (Raw)**: Captures the original source-of-truth frame bytes directly from ingestion.
+- **SILVER (Cleaned)**: Refines detections through YOLOv8 and correlates IDs with DeepSORT.
+- **GOLD (Aggregated)**: Computes high-level KPIs and PSI drift scores for business intelligence.
 
 ---
 

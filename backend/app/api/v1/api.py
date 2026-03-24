@@ -2,7 +2,8 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     streams, 
     detections, 
-    metrics
+    metrics,
+    ws
 )
 
 api_router = APIRouter()
@@ -11,6 +12,7 @@ api_router = APIRouter()
 api_router.include_router(streams.router, prefix="/streams", tags=["streams"])
 api_router.include_router(detections.router, prefix="/detections", tags=["detections"])
 api_router.include_router(metrics.router, prefix="/metrics", tags=["monitoring"])
+api_router.include_router(ws.router, prefix="/ws", tags=["websockets"])
 
 # Placeholder for additional endpoints (models, alerts)
 # api_router.include_router(models.router, prefix="/models", tags=["models"])
