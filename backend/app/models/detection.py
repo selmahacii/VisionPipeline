@@ -31,5 +31,5 @@ class DetectionEvent(Base):
     track_id: Mapped[int] = mapped_column(Integer, nullable=True, index=True)
     inference_ms: Mapped[float] = mapped_column(Float)
     
-    # Metadata for potential drill-down
-    metadata: Mapped[dict] = mapped_column(JSON, nullable=True)
+    # Extra data for potential drill-down
+    extra_info: Mapped[dict] = mapped_column(JSON, nullable=True)

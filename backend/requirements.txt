@@ -1,26 +1,21 @@
-fastapi==0.115.*
-uvicorn[standard]==0.24.*
-sqlalchemy[asyncio]==2.0.*
-asyncpg==0.29.*
-alembic==1.13.*
-pydantic-settings==2.1.*
-python-jose[cryptography]==3.3.*
-bcrypt==4.1.*
-loguru==0.7.*
+fastapi
+uvicorn[standard]
+sqlalchemy[asyncio]
+asyncpg
+aiosqlite
+pydantic-settings
+python-jose[cryptography]
+bcrypt
+loguru
+
 # Computer Vision
-ultralytics==8.1.*
-deep-sort-realtime==1.3.*
-opencv-python-headless==4.9.*
-numpy==1.26.*
-torch>=2.1.0
-torchvision>=0.16.0
-# Data Engineering
-aiokafka==0.10.*
-pandas==2.1.*
+ultralytics
+deep-sort-realtime
+opencv-python-headless
+numpy
+torch
+
 # MLOps
-mlflow==2.9.*
-evidently==0.4.*
-# Monitoring
-prometheus-client==0.19.*
-# Workers
-celery[redis]==5.3.*
+mlflow
+prometheus-client
+evidently

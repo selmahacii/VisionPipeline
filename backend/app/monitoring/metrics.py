@@ -2,7 +2,7 @@ from prometheus_client import Counter, Histogram, Gauge, Summary, CollectorRegis
 from typing import List, Dict, Any, Optional
 from loguru import logger
 
-# --- MODULE LEVEL REGISTRATION (AS REQUESTED) ---
+# --- Metrics Registration ---
 # Global prometheus metrics registry
 # Note: These are initialized once at import time.
 

@@ -24,12 +24,23 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.on_event("startup")
 async def startup_event():
-    # Initialize database when application starts
+    from app.services.stream_runner import StreamRunner, active_runners
+    import asyncio
+    
+    # Initial system sanity check
     try:
         await init_db()
         print("[API] App started and DB initialized.")
+        
+        # Start a default simulation stream workers
+        default_stream_id = "SIM-001"
+        runner = StreamRunner(default_stream_id)
+        task = asyncio.create_task(runner.start())
+        active_runners[default_stream_id] = task
+        print(f"[API] Initialized streaming engine for {default_stream_id}")
+        
     except Exception as e:
-        print(f"[API] Initial DB check failed (expected if DB not yet reachable): {str(e)}")
+        print(f"[API] Startup sequence warning: {str(e)}")
 
 @app.get("/")
 def read_root():

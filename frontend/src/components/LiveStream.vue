@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, toRefs } from 'vue';
 import { useVisionStream } from '../composables/useVisionStream';
 
 const props = defineProps<{
   streamId: string;
+  detections: any[];
+  isConnected: boolean;
+  error?: string | null;
   width?: number;
   height?: number;
 }>();
 
-const { detections, isConnected, error } = useVisionStream(props.streamId);
+const { detections, isConnected, error } = toRefs(props);
 const canvas = ref<HTMLCanvasElement | null>(null);
 
-// Render detections on canvas
 const drawDetections = () => {
   const ctx = canvas.value?.getContext('2d');
   if (!ctx || !canvas.value) return;

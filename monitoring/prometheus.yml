@@ -10,7 +10,7 @@ scrape_configs:
   # VisionPipeline API metrics
   - job_name: 'visionpipeline-api'
     static_configs:
-      - targets: ['host.docker.internal:3000']
+      - targets: ['backend:8000']
     metrics_path: '/api/v1/metrics/prometheus'
 
   # CV Service metrics

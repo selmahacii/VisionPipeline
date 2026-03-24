@@ -66,6 +66,7 @@ class MedallionPipeline:
                 "class_name": t["class_name"],
                 "confidence": t["confidence"],
                 "bbox": t["bbox"],
+                "inference_ms": t.get("inference_ms", 0.0),
                 "layer": "SILVER"
             })
             

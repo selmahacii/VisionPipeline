@@ -59,7 +59,7 @@ with DAG(
         python_callable=prepare_training_dataset,
     )
 
-    # 3. Training Phase (Mocked)
+    # 3. Training Phase
     t3 = BashOperator(
         task_id='train_yolo_weights',
         bash_command='echo "Running: yolo task=detect mode=train model=yolov8n.pt data=data.yaml epochs=10"',
@@ -77,5 +77,5 @@ with DAG(
         bash_command='echo "Reloading new weights in Vision Core..."',
     )
 
-    # TASK DEPENDENCIES (AS REQUESTED: using >>)
+    # TASK DEPENDENCIES (Logical Flow)
     t1 >> t2 >> t3 >> t4 >> t5

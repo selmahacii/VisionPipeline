@@ -18,7 +18,7 @@ class ConnectionManager:
         if stream_id not in self.active_connections:
             self.active_connections[stream_id] = set()
         self.active_connections[stream_id].add(websocket)
-        logger.debug(f"WS: Client connected to stream {stream_id}. Total: {len(self.active_connections[stream_id])}")
+        logger.info(f"WS: Client connected to stream {stream_id}. Total: {len(self.active_connections[stream_id])}")
 
     def disconnect(self, websocket: WebSocket, stream_id: str):
         """Cleanup connection resources."""
@@ -26,7 +26,7 @@ class ConnectionManager:
             self.active_connections[stream_id].discard(websocket)
             if not self.active_connections[stream_id]:
                 self.active_connections.pop(stream_id, None)
-        logger.debug(f"WS: Connection terminated for stream {stream_id}")
+        logger.info(f"WS: Connection terminated for stream {stream_id}")
 
     async def broadcast_to_stream(self, stream_id: str, message: Dict):
         """Broadcast data (detections/metrics) to all clients watching a specific stream."""

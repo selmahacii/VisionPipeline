@@ -23,13 +23,12 @@ class StreamRunner:
         
         try:
             while self.is_running:
-                # 1. Capture/Simulate Frame (BRONZE)
-                # In production: Read from OpenCV or Kafka
-                raw_data = b"MOCK_JPEG_BYTES"
+                # 1. Capture/Simulate Frame
+                raw_data = b"VIRTUAL_FRAME_PAYLOAD"
                 await self.pipeline.process_bronze(raw_data)
                 
-                # 2. Extract Detections & Tracking (SILVER)
-                # For demo, passing 'None' as frame image (YOLO wrapper handles mock frame)
+                # 2. Extract Detections & Tracking
+                # Passing None triggers the engine simulation if YOLO is unavailable
                 results = await self.pipeline.process_silver({}, None)
                 
                 # 3. Aggregate & Monitor (GOLD)

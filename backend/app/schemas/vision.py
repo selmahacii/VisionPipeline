@@ -36,7 +36,7 @@ class DetectionBase(BaseModel):
     bbox: List[float] = Field(..., min_items=4, max_items=4)
     track_id: Optional[int] = None
     inference_ms: float
-    metadata: Optional[Dict[str, Any]] = None
+    extra_info: Optional[Dict[str, Any]] = None
 
 class DetectionCreate(DetectionBase):
     pass

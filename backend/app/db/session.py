@@ -3,14 +3,22 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from sqlalchemy import text
 from app.core.config import settings
 
-# Create async engine for SQLAlchemy 2.0
-engine = create_async_engine(
-    settings.async_database_url,
-    echo=False,
-    future=True,
-    pool_size=10,
-    max_overflow=20,
-)
+# Dynamic engine selection (Async Postgres preferred, SQLite fallback)
+try:
+    engine = create_async_engine(
+        settings.async_database_url,
+        echo=False,
+        future=True,
+        pool_size=10,
+        max_overflow=20,
+    )
+except Exception:
+    # Development Fallback
+    engine = create_async_engine(
+        "sqlite+aiosqlite:///vision.db",
+        echo=False,
+        future=True
+    )
 
 # Async session factory
 AsyncSessionLocal = sessionmaker(
@@ -38,8 +46,7 @@ async def init_db():
         # but the boilerplate creates tables directly for convenience.
         # await conn.run_sync(Base.metadata.create_all)
         
-        # TimescaleDB hypertable creation check
-        # We'll run the SQL explicitly as requested
+        # TimescaleDB initialization
         try:
             await conn.execute(text("CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"))
             

@@ -58,7 +58,8 @@ class ObjectTracker:
                     "track_id": int(track_id) if str(track_id).isdigit() else track_id,
                     "bbox": track.to_ltrb().tolist(),
                     "class_name": track.get_det_class() or "unknown",
-                    "confidence": track.get_det_conf() or 0.0
+                    "confidence": track.get_det_conf() or 0.0,
+                    "inference_ms": detections[0]["inference_ms"] if detections else 0.0
                 })
             
             return tracked_results

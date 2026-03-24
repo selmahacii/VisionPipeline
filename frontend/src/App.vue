@@ -3,8 +3,8 @@ import { ref } from 'vue';
 import LiveStream from './components/LiveStream.vue';
 import { useVisionStream } from './composables/useVisionStream';
 
-const selectedStreamId = ref('DEFAULT_STREAM');
-const { goldReport } = useVisionStream(selectedStreamId.value);
+const selectedStreamId = ref('SIM-001');
+const { detections, goldReport, isConnected, error } = useVisionStream(selectedStreamId.value);
 </script>
 
 <template>
@@ -45,7 +45,12 @@ const { goldReport } = useVisionStream(selectedStreamId.value);
       <!-- Primary Stream Column (8/12) -->
       <section class="col-span-12 lg:col-span-8 flex flex-col gap-6">
         <div class="flex-1 min-h-0 bg-gray-900/40 rounded-xl border border-gray-800/60 p-4">
-          <LiveStream :stream-id="selectedStreamId" />
+          <LiveStream 
+            :stream-id="selectedStreamId" 
+            :detections="detections"
+            :is-connected="isConnected"
+            :error="error"
+          />
         </div>
       </section>
 
@@ -85,13 +90,36 @@ const { goldReport } = useVisionStream(selectedStreamId.value);
         </div>
 
         <!-- System Stats -->
-        <div class="flex-1 bg-gray-900/30 rounded-xl border border-gray-800/40 border-dashed p-6">
+        <div class="flex-1 bg-gray-900/40 rounded-xl border border-gray-800/40 border-dashed p-6">
           <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">Pipeline Health</h3>
           <div class="space-y-6">
-            <div v-for="i in 3" :key="i" class="flex items-center justify-between">
-              <div class="w-24 h-2 bg-gray-800 rounded-full"></div>
-              <div class="w-12 h-2 bg-gray-800 rounded-full"></div>
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] text-gray-400 font-mono tracking-tighter">BRONZE_INGEST</span>
+              <div class="flex items-center gap-2">
+                <div class="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
+                <span class="text-[10px] text-gray-300 font-bold">15 FPS</span>
+              </div>
             </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] text-gray-400 font-mono tracking-tighter">SILVER_TRANSFORM</span>
+              <div class="flex items-center gap-2">
+                <div class="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]"></div>
+                <span class="text-[10px] text-gray-300 font-bold">ACTIVE</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] text-gray-400 font-mono tracking-tighter">GOLD_METRICS</span>
+              <div class="flex items-center gap-2">
+                <div class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+                <span class="text-[10px] text-gray-300 font-bold">COMPUTING</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Technical Details Card -->
+          <div class="mt-8 pt-6 border-t border-gray-800/60">
+            <p class="text-[10px] text-gray-500 leading-tight mb-2">LAST_DRIVE_EVENT: {{ goldReport?.drift_detected ? 'CRITICAL_LOGGED' : 'AUTO_AUDIT' }}</p>
+            <p class="text-[10px] text-gray-500 leading-tight font-mono">HASH: 49e8b_sim_active</p>
           </div>
         </div>
 

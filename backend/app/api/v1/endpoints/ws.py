@@ -9,6 +9,7 @@ async def websocket_endpoint(
     websocket: WebSocket,
     stream_id: str
 ):
+    logger.info(f"WS: Received connection request for stream_id: {stream_id}")
     """
     WebSocket endpoint for real-time video stream detections.
     Connect to: ws://localhost:8000/api/v1/ws/{stream_id}

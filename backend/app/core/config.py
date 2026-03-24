@@ -21,7 +21,11 @@ class Settings(BaseSettings):
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}/{self.POSTGRES_DB}"
 
     # Redis Settings
+    REDIS_HOST: str = "127.0.0.1"
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    
+    # MLOps Settings
+    MLFLOW_TRACKING_URI: str = "http://127.0.0.1:5000"
     
     # Kafka Settings
     KAFKA_BOOTSTRAP_SERVERS: str = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
@@ -34,6 +38,6 @@ class Settings(BaseSettings):
     BRONZE_RETENTION_DAYS: int = 30
     SILVER_RETENTION_DAYS: int = 90
     
-    model_config = SettingsConfigDict(case_sensitive=True, env_file=".env")
+    model_config = SettingsConfigDict(case_sensitive=True, env_file=".env", extra="ignore")
 
 settings = Settings()

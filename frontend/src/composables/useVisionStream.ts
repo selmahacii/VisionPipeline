@@ -22,7 +22,8 @@ export function useVisionStream(streamId: string) {
   let socket: WebSocket | null = null;
 
   const connect = () => {
-    const wsUrl = `${import.meta.env.VITE_WS_URL}/api/v1/ws/${streamId}`;
+    const baseUrl = import.meta.env.VITE_WS_URL || 'ws://127.0.0.1:8000';
+    const wsUrl = `${baseUrl}/api/v1/ws/${streamId}`;
     
     try {
       socket = new WebSocket(wsUrl);
@@ -65,7 +66,7 @@ export function useVisionStream(streamId: string) {
     connect();
   });
 
-  // CRITICAL: Cleanup connection when component is unmounted (AS REQUESTED)
+  // Lifecycle cleanup
   onUnmounted(() => {
     disconnect();
   });
