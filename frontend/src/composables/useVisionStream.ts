@@ -26,7 +26,7 @@ export function useVisionStream(streamId: string) {
     const wsUrl = `${baseUrl}/api/v1/ws/${streamId}`;
     
     try {
-      socket = new WebSocket(wsUrl);
+      socket = new WebSocket('ws://127.0.0.1:8000/api/v1/ws/' + streamId);
       
       socket.onopen = () => {
         isConnected.value = true;
