@@ -1,12 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import LiveStream from './components/LiveStream.vue';
 import { useVisionStream } from './composables/useVisionStream';
 
 const currentView = ref('dashboard');
-
 const selectedStreamId = ref('SIM-001');
 const { detections, goldReport, isConnected, error } = useVisionStream(selectedStreamId.value);
+
+const avgConfidence = computed(() => {
+  if (detections.value.length === 0) return 0;
+  const sum = detections.value.reduce((acc, det) => acc + det.confidence, 0);
+  return (sum / detections.value.length) * 100;
+});
+
+const activeObjects = computed(() => detections.value.length);
 </script>
 
 <template>
@@ -91,6 +98,18 @@ const { detections, goldReport, isConnected, error } = useVisionStream(selectedS
             </div>
           </div>
 
+          <!-- Real-time Stats Grid -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="p-4 bg-gray-900/40 rounded-xl border border-gray-800/60 transition-all hover:bg-gray-800/40">
+              <p class="text-[10px] text-gray-500 uppercase font-mono mb-1">Active Tracks</p>
+              <p class="text-2xl font-bold font-mono tracking-tighter">{{ activeObjects }}</p>
+            </div>
+            <div class="p-4 bg-gray-900/40 rounded-xl border border-gray-800/60 transition-all hover:bg-gray-800/40">
+              <p class="text-[10px] text-gray-500 uppercase font-mono mb-1">Avg Confidence</p>
+              <p class="text-2xl font-bold font-mono text-blue-400 tracking-tighter">{{ avgConfidence.toFixed(0) }}%</p>
+            </div>
+          </div>
+
           <!-- System Stats -->
           <div class="flex-1 bg-gray-900/40 rounded-xl border border-gray-800/40 border-dashed p-6">
             <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">Pipeline Health</h3>
@@ -147,7 +166,32 @@ const { detections, goldReport, isConnected, error } = useVisionStream(selectedS
           <div v-for="l in 10" :key="l" class="p-2 border-b border-gray-800 hover:bg-gray-800/50">
             <span class="text-gray-500">[{{ new Date().toISOString() }}]</span>
             <span class="text-green-500 ml-4">INFO</span>
-            <span class="ml-4">Processed frame {{ 1000 + l }} | Detections: 4</span>
+            <span class="ml-4">PROCESSED FRAME {{ 2400 + l }} | OBJECTS: 4 | PSI_LOK: OK</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALERTS VIEW -->
+      <div v-else-if="currentView === 'alerts'" class="p-8">
+        <h2 class="text-xl font-bold mb-8 tracking-tight">Security & Quality Alerts</h2>
+        <div class="space-y-4">
+          <div v-if="goldReport?.drift_detected" class="p-6 bg-red-900/10 border border-red-500/30 rounded-xl flex items-center justify-between shadow-[0_0_20px_rgba(239,68,68,0.1)]">
+            <div class="flex items-center gap-6">
+              <div class="relative flex">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-8 w-8 bg-red-500 items-center justify-center">
+                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg>
+                </span>
+              </div>
+              <div>
+                <p class="font-bold text-red-100 text-sm">CRITICAL_DATA_DRIFT</p>
+                <p class="text-[10px] text-gray-500 uppercase font-mono mt-1">SIM-001 | PSI_SCORE: {{ goldReport?.psi_score.toFixed(4) }} | ACTION: RE-TRAIN</p>
+              </div>
+            </div>
+            <button class="px-6 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-[10px] font-bold transition-all shadow-lg">RUN AUTO-RETRAIN</button>
+          </div>
+          <div class="p-12 text-center bg-gray-900/40 rounded-2xl border border-gray-800/80 border-dashed">
+            <p class="text-[10px] text-gray-600 uppercase tracking-[0.2em] font-mono">No other threats detected</p>
           </div>
         </div>
       </div>

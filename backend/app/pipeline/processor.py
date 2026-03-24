@@ -1,3 +1,4 @@
+# Copyright © 2025 Selma Haci. All rights reserved.
 import json
 import math
 import time
@@ -11,9 +12,8 @@ from app.models.detection import DetectionEvent
 
 class MedallionPipeline:
     """
-    Production-grade Data Engineering Pipeline for Computer Vision.
-    Transformation Flow:
-    BRONZE (Raw) -> SILVER (Cleaned/Enriched) -> GOLD (Aggregated/Metrics)
+    High-performance engineering pipeline for computer vision telemetry.
+    Transformation: BRONZE (RAW) -> SILVER (TRACKING) -> GOLD (ANALYTICS)
     """
 
     def __init__(self, stream_id: str):

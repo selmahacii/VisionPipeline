@@ -1,3 +1,4 @@
+/** Copyright © 2025 Selma Haci. All rights reserved. */
 import { ref, onMounted, onUnmounted } from 'vue';
 
 export interface Detection {
