@@ -143,7 +143,7 @@ mindmap
 
 ## ⚖️ License
 
-**Copyright © 2024 Selma Haci. All rights reserved.**
+**Copyright © 2025 Selma Haci. All rights reserved.**
 
 This software and its associated documentation files are the proprietary property of **Selma Haci**. 
 
