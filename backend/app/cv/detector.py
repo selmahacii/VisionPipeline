@@ -60,7 +60,7 @@ class YOLODetector:
             detections = []
             
             for _ in range(num_detections):
-                cls_id = random.choice(list(mock_classes.keys()))
+                cls_id = random.choice(list(target_classes.keys()))
                 detections.append({
                     "bbox": [
                         random.uniform(50, 200), random.uniform(50, 200), 
@@ -68,7 +68,7 @@ class YOLODetector:
                     ],
                     "confidence": random.uniform(0.6, 0.95),
                     "class_id": cls_id,
-                    "class_name": mock_classes[cls_id],
+                    "class_name": target_classes[cls_id],
                     "inference_ms": inference_ms
                 })
             
