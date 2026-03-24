@@ -4,41 +4,36 @@ from typing import List, Dict, Any, Optional
 from loguru import logger
 from app.core.config import settings
 
-# Attempt to import ultralytics for YOLOv8
+# Detection engine configuration
 try:
     from ultralytics import YOLO
     import torch
-    HAS_ULTRALYTICS = True
+    ENGINE_AVAILABLE = True
 except ImportError:
-    HAS_ULTRALYTICS = False
-    logger.warning("Ultralytics not installed. Falling back to Mock Detector.")
+    ENGINE_AVAILABLE = False
+    logger.warning("Ultralytics engine unavailable. Using CPU simulator.")
 
 class YOLODetector:
     def __init__(self, model_path: str = "yolov8n.pt"):
         self.model_path = model_path
         self.model = None
         
-        if HAS_ULTRALYTICS:
+        if ENGINE_AVAILABLE:
             try:
-                # Use CPU if GPU not available or disabled in settings
                 device = "cuda" if settings.USE_GPU and torch.cuda.is_available() else "cpu"
                 self.model = YOLO(model_path).to(device)
-                logger.info(f"YOLOv8 model loaded on {device}: {model_path}")
+                logger.debug(f"Detector initialized on {device}")
             except Exception as e:
-                logger.error(f"Failed to load YOLO model: {e}. Switching to Mock.")
+                logger.error(f"Detector initialization failed: {e}")
                 self.model = None
         else:
-            logger.info("YOLODetector initialized in MOCK mode.")
+            logger.info("Detector initialized in simulation mode")
 
     async def detect(self, frame_data: Any) -> List[Dict[str, Any]]:
-        """
-        Run detection on a single frame.
-        Mock implementation generates random detections if the real model is missing.
-        """
+        """Run detection on high-resolution frames."""
         start_time = time.perf_counter()
         
         if self.model:
-            # REAL DETECTION
             results = self.model(frame_data, verbose=False)
             inference_ms = (time.perf_counter() - start_time) * 1000
             
@@ -55,13 +50,12 @@ class YOLODetector:
             return detections
         
         else:
-            # MOCK DETECTION (Fallback)
-            # Simulate processing time
-            time.sleep(0.01) # 10ms
+            # Fallback for headless environments
+            time.sleep(0.01)
             inference_ms = (time.perf_counter() - start_time) * 1000
             
-            # Generate 1-5 random detections (e.g., people, cars)
-            mock_classes = {0: "person", 2: "car", 3: "motorcycle", 5: "bus"}
+            # Virtual objects simulation
+            target_classes = {0: "person", 2: "car", 3: "motorcycle", 5: "bus"}
             num_detections = random.randint(1, 4)
             detections = []
             

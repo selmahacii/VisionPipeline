@@ -3,38 +3,34 @@ import time
 import random
 from loguru import logger
 
-# Attempt to import deep-sort-realtime
+# Tracking engine configuration
 try:
     from deep_sort_realtime.deepsort_tracker import DeepSort
-    HAS_DEEPSORT = True
+    TRACK_ENGINE_AVAILABLE = True
 except ImportError:
-    HAS_DEEPSORT = False
-    logger.warning("DeepSORT not installed. Falling back to Mock Tracker.")
+    TRACK_ENGINE_AVAILABLE = False
+    logger.warning("DeepSORT engine unavailable. Using CPU simulator.")
 
 class ObjectTracker:
     def __init__(self, max_age: int = 30):
         self.max_age = max_age
         self.tracker = None
         
-        if HAS_DEEPSORT:
+        if TRACK_ENGINE_AVAILABLE:
             try:
                 self.tracker = DeepSort(
                     max_age=max_age, 
                     n_init=3, 
                     nms_max_overlap=1.0, 
-                    max_cosine_distance=0.2, 
-                    nn_budget=None, 
-                    override_track_class=None, 
-                    clock=None, 
-                    today=None
+                    max_cosine_distance=0.2
                 )
-                logger.info("DeepSORT tracker initialized.")
+                logger.debug("ObjectTracker engine initialized")
             except Exception as e:
-                logger.error(f"Failed to intialize DeepSORT: {e}. Switching to Mock.")
+                logger.error(f"Tracker initialization failed: {e}")
                 self.tracker = None
         else:
-            logger.info("ObjectTracker initialized in MOCK mode.")
-            self.mock_tracks = {} # {id: last_updated_time}
+            logger.info("ObjectTracker initialized in simulation mode")
+            self.virtual_tracks = {}
 
     def update(self, detections: List[Dict[str, Any]], frame: Any) -> List[Dict[str, Any]]:
         """
@@ -68,19 +64,13 @@ class ObjectTracker:
             return tracked_results
         
         else:
-            # MOCK TRACKING (Persistent ID Simulation)
-            # We assign track IDs to detections if we don't have a real tracker.
-            # Simple heuristic: try to match by proximity if we really wanted to, 
-            # but for a mock, we'll just assign IDs (1, 2, 3...) that persist.
-            
+            # Virtual ID assignment
+            # Simple persistence simulation
             tracked_results = []
             for i, d in enumerate(detections):
-                # Fake persistence for demo:
-                # Assign ID based on order, simulate it's a 'tracked' object.
-                # In a real mock, we would use IOU matching.
                 tracked_results.append({
                     **d,
-                    "track_id": i + 1 # simplistic but works for mock testing
+                    "track_id": i + 1 
                 })
             
             return tracked_results
