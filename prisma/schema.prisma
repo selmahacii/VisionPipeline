@@ -1,0 +1,280 @@
+// VisionPipeline - Production-Grade Computer Vision MLOps Platform
+// This schema implements the Bronze/Silver/Gold data architecture
+// with full MLOps capabilities for real-time video stream processing
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// STREAM MANAGEMENT
+// ============================================================================
+
+/// VideoStream - represents an input video source
+/// Sources: webcam (index), video file (path), RTSP URL (ip camera)
+/// Status lifecycle: inactive → active → processing → error
+enum StreamStatus {
+  INACTIVE
+  ACTIVE
+  PROCESSING
+  ERROR
+}
+
+enum StreamSource {
+  WEBCAM
+  FILE
+  RTSP
+  HTTP
+}
+
+model VideoStream {
+  id          String       @id @default(cuid())
+  name        String
+  sourceType  StreamSource @default(HTTP)
+  sourceUri   String
+  status      StreamStatus @default(INACTIVE)
+
+  // Active model for this stream
+  activeModelId String?
+
+  // Performance stats
+  fpsActual    Float @default(0.0)
+  totalFrames  Int   @default(0)
+  totalObjects Int   @default(0)
+
+  // Config overrides per stream (JSON)
+  config String @default("{}")
+
+  createdAt     DateTime @default(now())
+  lastActiveAt  DateTime?
+
+  // Relations
+  detections Detection[]
+  metrics    ModelMetric[]
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// DETECTION DATA (High-volume time-series)
+// ============================================================================
+
+/// Detection - one detected object in one video frame
+/// This is the highest-volume table — millions of rows per day
+/// Bronze Layer: Raw detection data from CV models
+model Detection {
+  id        String   @id @default(cuid())
+  streamId  String
+  stream    VideoStream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+
+  // When this detection occurred (time-series partition key)
+  detectedAt DateTime @default(now())
+
+  // Frame info
+  frameNumber Int
+  frameWidth  Int  @default(640)
+  frameHeight Int  @default(480)
+
+  // Detection info
+  classId    Int
+  className  String
+  confidence Float
+  trackId    Int?
+
+  // Bounding box stored as JSON: {"x1":100,"y1":50,"x2":200,"y2":150}
+  bbox String
+
+  // Optional attributes (mask, keypoints, reid embedding)
+  attributes String @default("{}")
+
+  // Processing tier
+  tier String @default("SILVER") // BRONZE, SILVER, GOLD
+
+  createdAt DateTime @default(now())
+
+  @@index([streamId])
+  @@index([detectedAt])
+  @@index([streamId, detectedAt])
+  @@index([className])
+}
+
+// ============================================================================
+// MODEL METRICS (Time-series for MLOps)
+// ============================================================================
+
+/// ModelMetric - time-series performance metrics for each model
+/// Gold Layer: Pre-aggregated metrics for dashboards
+model ModelMetric {
+  id        String @id @default(cuid())
+  streamId  String
+  stream    VideoStream @relation(fields: [streamId], references: [id], onDelete: Cascade)
+
+  modelName  String
+  recordedAt DateTime @default(now())
+
+  // Performance metrics
+  inferenceLatencyMs Float
+  fpsProcessed       Float
+
+  // Detection quality
+  confidenceMean   Float
+  confidenceStd    Float
+  objectsPerFrame  Float
+  totalDetections  Int
+
+  // Drift monitoring (PSI score from Evidently)
+  driftScore    Float @default(0.0)
+  driftDetected Boolean @default(false)
+
+  // Resource usage
+  cpuUsagePct Float @default(0.0)
+  memoryMb    Float @default(0.0)
+
+  @@index([streamId])
+  @@index([recordedAt])
+  @@index([modelName])
+}
+
+// ============================================================================
+// MODEL REGISTRY (MLOps)
+// ============================================================================
+
+/// ModelVersion - tracks all model versions registered in MLflow
+/// Links MLflow run_id to the active deployment
+enum ModelStage {
+  DEVELOPMENT
+  STAGING
+  PRODUCTION
+  ARCHIVED
+}
+
+model ModelVersion {
+  id           String      @id @default(cuid())
+  name         String
+  version      String
+  mlflowRunId  String      @unique
+  modelPath    String
+  stage        ModelStage  @default(DEVELOPMENT)
+  isActive     Boolean     @default(false)
+
+  // Performance metrics
+  map50 Float @default(0.0)  // Mean Average Precision at IoU 0.5
+  map75 Float @default(0.0)  // Mean Average Precision at IoU 0.75
+
+  // Training metadata
+  trainingParams String @default("{}")
+  datasetVersion String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@index([stage])
+  @@index([isActive])
+}
+
+// ============================================================================
+// EXPERIMENTS (MLflow-style tracking)
+// ============================================================================
+
+model Experiment {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String?
+  runs        ExperimentRun[]
+
+  createdAt DateTime @default(now())
+}
+
+model ExperimentRun {
+  id             String     @id @default(cuid())
+  experimentId   String
+  experiment     Experiment @relation(fields: [experimentId], references: [id])
+
+  runId          String     @unique
+  status         String     @default("RUNNING") // RUNNING, FINISHED, FAILED
+  startTime      DateTime   @default(now())
+  endTime        DateTime?
+
+  // Parameters and metrics stored as JSON
+  parameters String @default("{}")
+  metrics    String @default("{}")
+
+  // Artifacts paths
+  artifacts String @default("{}")
+
+  createdAt DateTime @default(now())
+
+  @@index([experimentId])
+  @@index([status])
+}
+
+// ============================================================================
+// ALERTS & EVENTS
+// ============================================================================
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum AlertType {
+  DRIFT_DETECTED
+  MODEL_DEGRADED
+  STREAM_ERROR
+  RETRAIN_TRIGGERED
+  MODEL_DEPLOYED
+  THRESHOLD_EXCEEDED
+}
+
+model Alert {
+  id          String        @id @default(cuid())
+  streamId    String?
+  alertType   AlertType
+  severity    AlertSeverity @default(INFO)
+  message     String
+  metadata    String        @default("{}")
+  acknowledged Boolean      @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([streamId])
+  @@index([alertType])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// PIPELINE CONFIGURATION
+// ============================================================================
+
+model PipelineConfig {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String?
+
+  // Frame processing settings
+  frameSkip           Int   @default(2)     // Process every Nth frame
+  confidenceThreshold Float @default(0.45)
+  iouThreshold        Float @default(0.45)
+  maxTrackedObjects   Int   @default(50)
+
+  // Drift detection thresholds
+  driftAlertThreshold     Float @default(0.25)
+  retrainTriggerThreshold Float @default(0.40)
+
+  // Data retention
+  bronzeRetentionDays Int @default(7)
+  silverRetentionDays Int @default(30)
+  goldRetentionDays   Int @default(90)
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

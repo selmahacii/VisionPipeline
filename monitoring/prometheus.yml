@@ -1,0 +1,29 @@
+# Prometheus Configuration for VisionPipeline
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'visionpipeline'
+
+scrape_configs:
+  # VisionPipeline API metrics
+  - job_name: 'visionpipeline-api'
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    metrics_path: '/api/v1/metrics/prometheus'
+
+  # CV Service metrics
+  - job_name: 'visionpipeline-cv-service'
+    static_configs:
+      - targets: ['cv-service:3001']
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node exporter (if deployed)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
