@@ -156,7 +156,7 @@ open http://localhost:5173
 
 ---
 
-## 🏗️ Architecture (ASCII)
+## Architecture (ASCII)
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -179,7 +179,7 @@ open http://localhost:5173
 
 ---
 
-## 📊 Medallion Pipeline Lifecycle
+##  Medallion Pipeline Lifecycle
 
 - **BRONZE (Raw)**: Captures the original source-of-truth frame bytes directly from ingestion.
 - **SILVER (Cleaned)**: Refines detections through YOLOv8 and correlates IDs with DeepSORT.
@@ -187,7 +187,7 @@ open http://localhost:5173
 
 ---
 
-## ⚖️ License
+##  License
 
 **Copyright © 2025 Selma Haci. All rights reserved.**
 
